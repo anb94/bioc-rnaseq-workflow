@@ -11,6 +11,8 @@ salmon index -i gencode.v27_salmon_0.8.2 -t gencode.v27.transcripts.fa.gz
 
 Before running the code above, we need to set up the environment and acquire the files that are needed.
 
+It's important to note that the files will be quite large (~40GB) and so it is advised to use the group's HPC - but lab PC's should be able to handle it.
+
 ## Setting Up
 
 First, we need to download the reference genome that we will align the reads to.
@@ -46,8 +48,10 @@ touch ena-download-read-run-SRP033351-fastq-ftp.sh
 nano ena-download-read-run-SRP033351-fastq-ftp.sh
 ```
 
-Once in the file, copy the text below and paste it into the file:
+Once in the file, copy the text below and paste it into the file, save and exit:
+
 ```bash
+#!/bin/bash
 wget -nc ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR103/005/SRR1039515/SRR1039515_1.fastq.gz
 wget -nc ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR103/006/SRR1039516/SRR1039516_1.fastq.gz
 wget -nc ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR103/000/SRR1039520/SRR1039520.fastq.gz
@@ -89,3 +93,17 @@ wget -nc ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR103/002/SRR1039522/SRR1039522_2.f
 wget -nc ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR103/008/SRR1039518/SRR1039518_1.fastq.gz
 ```
 
+Make the script executable
+```bash
+chmod u+x ena-download-read-run-SRP033351-fastq-ftp.sh
+```
+
+If you are using an HPC, use a terminal multiplexer such as tmux or screen. The EE HPC has tmux whereas Burgundy has screen.
+
+```bash
+    tmux new -s rna_seq_analysis
+```
+
+```bash
+./ena-download-read-run-SRP033351-fastq-ftp.sh
+```
