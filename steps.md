@@ -15,29 +15,7 @@ It's important to note that the files will be quite large (~40GB) and so it is a
 
 ## Setting Up
 
-First, we need to download the reference genome that we will align the reads to.
-
-```bash
-# donwload the required file
-wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_27/gencode.v27.transcripts.fa.gz
-```
-
-We also need to install salmon which can be done through conda. 
-
-Instructions to install via conda according to their [website](https://combine-lab.github.io/salmon/getting_started/#obtaining-salmon)
-
-```bash
-$ conda config --add channels conda-forge
-$ conda config --add channels bioconda
-$ conda create -n salmon salmon
-```
-This will install the latest salmon in its own conda environment. The environment can then be activated via:
-
-```bash
-$ conda activate salmon
-```
-
-Next, we need to download the sequence data.
+First, we need to download the sequence data.
 
 The data used in this tutorial is GEO entry GSE52778. 
 We will [acquire the data from ENA](https://www.ebi.ac.uk/ena/browser/view/SRP033351), rather than GEO as it is more convenient.
@@ -106,4 +84,26 @@ If you are using an HPC, use a terminal multiplexer such as tmux or screen. The 
 
 ```bash
 ./ena-download-read-run-SRP033351-fastq-ftp.sh
+```
+
+Next, we need to download the reference genome that we will align the reads to.
+
+```bash
+# donwload the required file
+wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_27/gencode.v27.transcripts.fa.gz
+```
+
+We also need to install salmon which can be done through conda. 
+
+Instructions to install via conda according to their [website](https://combine-lab.github.io/salmon/getting_started/#obtaining-salmon)
+
+```bash
+$ conda config --add channels conda-forge
+$ conda config --add channels bioconda
+$ conda create -n salmon salmon
+```
+This will install the latest salmon in its own conda environment. The environment can then be activated via:
+
+```bash
+$ conda activate salmon
 ```
