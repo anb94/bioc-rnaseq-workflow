@@ -87,47 +87,7 @@ If you are using an HPC, use a terminal multiplexer such as tmux or screen. The 
 ./ena-download-read-run-SRP033351-fastq-ftp.sh
 ```
 
-Note: this current method does not check whether the data was downloaded correctly.
-Below is a Perplexity generated script for downloading it 'correctly' - saving below for future checking.
-
-```bash
-#!/bin/bash
-
-# Create log file
-LOGFILE="download_log_$(date +%Y%m%d_%H%M%S).log"
-echo "Starting download at $(date)" | tee $LOGFILE
-
-# Function to download and verify
-download_and_verify() {
-    local url=$1
-    local filename=$(basename $url)
-    
-    echo "Downloading: $filename" | tee -a $LOGFILE
-    
-    if wget -nc $url; then
-        echo "Download successful: $filename" | tee -a $LOGFILE
-        
-        # Verify gzip integrity
-        if gunzip -t $filename 2>/dev/null; then
-            echo "File integrity OK: $filename" | tee -a $LOGFILE
-        else
-            echo "WARNING: File corrupted: $filename" | tee -a $LOGFILE
-            echo "Attempting re-download..." | tee -a $LOGFILE
-            rm -f $filename
-            wget $url
-            if gunzip -t $filename 2>/dev/null; then
-                echo "Re-download successful: $filename" | tee -a $LOGFILE
-            else
-                echo "ERROR: $filename still corrupted after re-download" | tee -a $LOGFILE
-                return 1
-            fi
-        fi
-    else
-        echo "ERROR: Download failed for $filename" | tee -a $LOGFILE
-        return 1
-    fi
-}
-
+Note: this current method does not check whether the data was downloaded correctly. 
 
 
 Next, we need to download the reference genome that we will align the reads to.
