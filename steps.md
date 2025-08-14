@@ -1,6 +1,6 @@
 # RNA Seq Workflow
 
-In this tutorial we are following a mixture of this excellent tutorial by [Michael Love et al](https://www.bioconductor.org/help/course-materials/2019/CSAMA/materials/labs/lab-03-rnaseq/rnaseqGene_CSAMA2019.html?utm_source=perplexity#experimental-data) and this more [recent introductory tutorial](https://divingintogeneticsandgenomics.com/post/how-to-preprocess-geo-bulk-rnaseq-data-with-salmon/) by Tommy Tang. The main reason for this is lack of set up explained in the bioconductor tutorial as they assume you already have the dataset as well as referring to an R script that no longer exists.
+In this tutorial we are following a mixture of this excellent tutorial by [Michael Love et al.](https://www.bioconductor.org/help/course-materials/2019/CSAMA/materials/labs/lab-03-rnaseq/rnaseqGene_CSAMA2019.html?utm_source=perplexity#experimental-data) and this more [recent introductory tutorial](https://divingintogeneticsandgenomics.com/post/how-to-preprocess-geo-bulk-rnaseq-data-with-salmon/) by Tommy Tang. The main reason for this is lack of set up explained in the bioconductor tutorial as they assume you already have the dataset as well as referring to an R script that no longer exists.
 
 Although the tutorial is great, it skips over some of the key steps that are difficult for beginners, including data acquisition.
 Please read up to the following part section 3.2 Salmon quantification:
@@ -114,6 +114,8 @@ You can then view the number of time each gene type appears
 zless -S gencode.v45.annotation.gtf.gz | grep -v "#" | awk '$3=="gene"' | cut -f9 | cut -f2 -d ";" | sort | uniq -c | sort -k1,1nr
 ```
 
+You may want to do a fastqc for quality control of the reads and trimming with fastp for the sequencing adapters. We will skip it in this tutorial.
+
 ### Set Up Conda
 
 We also need to install salmon which can be done through conda.
@@ -173,4 +175,39 @@ done
 chmod u+x quant-files.sh
 # Run the script
 ./quant-files.sh
+```
+
+Check that we have the output files
+
+```bash
+ find . -name "*sf"
+ ```
+
+Check the mapping rate of the output
+
+ ```bash
+find . -name "salmon_quant.log" | xargs grep "Mapping rate"
+ ```
+
+## Importing the data to R with tximport
+
+```R
+library(tximport)
+library(dplyr)
+library(ggplot2)
+```
+
+```R
+files <- list.files(path = "~/rna-seq-tutorial/raw-seq-data", pattern = ".sf", full.names = TRUE, recursive = TRUE)
+
+samp_dirs <- basename(dirname(files))
+names(files) <- sub("_quant$", "", samp_dirs)
+```
+
+```R
+gtf <- rtracklayer::import("~/rna-seq-tutorial/reference/gencode.v45.basic.annotation.gtf.gz")
+```
+
+```R
+gtf_df <- as.data.frame(gtf)
 ```
