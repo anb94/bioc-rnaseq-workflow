@@ -1,6 +1,6 @@
 # RNA Seq Workflow
 
-In this tutorial we are following this excellent tutorial by [Michael Love et al](https://www.bioconductor.org/help/course-materials/2019/CSAMA/materials/labs/lab-03-rnaseq/rnaseqGene_CSAMA2019.html?utm_source=perplexity#experimental-data).
+In this tutorial we are following a mixture of this excellent tutorial by [Michael Love et al](https://www.bioconductor.org/help/course-materials/2019/CSAMA/materials/labs/lab-03-rnaseq/rnaseqGene_CSAMA2019.html?utm_source=perplexity#experimental-data) and this more [recent introductory tutorial](https://divingintogeneticsandgenomics.com/post/how-to-preprocess-geo-bulk-rnaseq-data-with-salmon/) by Tommy Tang. The main reason for this is lack of set up explained in the bioconductor tutorial as they assume you already have the dataset as well as referring to an R script that no longer exists.
 
 Although the tutorial is great, it skips over some of the key steps that are difficult for beginners, including data acquisition.
 Please read up to the following part section 3.2 Salmon quantification:
@@ -14,6 +14,8 @@ Before running the code above, we need to set up the environment and acquire the
 It's important to note that the files will be quite large (~40 GB) and so it is advised to use the group's HPC - but lab PC's should be able to handle it.
 
 ## Setting Up
+
+### Downloading required files and data
 
 First, we need to download the sequence data.
 
@@ -80,22 +82,39 @@ chmod u+x ena-download-read-run-SRP033351-fastq-ftp.sh
 If you are using an HPC, use a terminal multiplexer such as tmux or screen. The EE HPC has tmux whereas Burgundy has screen.
 
 ```bash
-    tmux new -s rna_seq_analysis
+tmux new -s rna_seq_analysis
 ```
 
 ```bash
 ./ena-download-read-run-SRP033351-fastq-ftp.sh
 ```
 
-Note: this current method does not check whether the data was downloaded correctly. 
-
+Note: this current method does not check whether the data was downloaded correctly.
 
 Next, we need to download the reference genome that we will align the reads to.
 
 ```bash
+mkdir reference
+cd reference
 # donwload the required file
-wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_27/gencode.v27.transcripts.fa.gz
+wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_45/gencode.v45.transcripts.fa.gz
+wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_45/gencode.v45.annotation.gtf.gz
+wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_45/gencode.v45.basic.annotation.gtf.gz
 ```
+
+Check the gtf file
+
+```bash
+zless -S gencode.v45.annotation.gtf.gz | grep -v "#" | awk '$3=="gene"' | cut -f9 | head -3
+```
+
+You can then view the number of time each gene type appears
+
+```bash
+zless -S gencode.v45.annotation.gtf.gz | grep -v "#" | awk '$3=="gene"' | cut -f9 | cut -f2 -d ";" | sort | uniq -c | sort -k1,1nr
+```
+
+### Set Up Conda
 
 We also need to install salmon which can be done through conda.
 
@@ -113,6 +132,14 @@ This will install the latest salmon in its own conda environment. The environmen
 conda activate salmon
 ```
 
+### Create the index
+
+```bash
+salmon index -t gencode.v45.transcripts.fa.gz -i gencode.v45_human_index -k 31 --gencode
+```
+
+## Quantifcation
+
 The authors point to an R script for quantification, however this file is no longer available. Therefore, we will use bash to do this step.
 
 ```bash
@@ -128,14 +155,14 @@ Paste the following, save and exit:
 #!/bin/bash
 
 # Relative path from raw-seq-data to the index
-salmon_index="../gencode-index/gencode.v27_salmon_0.8.2"
+salmon_index="../reference/gencode.v45_human_index"
 
 # Loop through all samples
 for sample in SRR1039508 SRR1039509 SRR1039510 SRR1039511 SRR1039512 SRR1039513 SRR1039514 SRR1039515 SRR1039516 SRR1039517 SRR1039518 SRR1039519 SRR1039520 SRR1039521 SRR1039522 SRR1039523
 do
     echo "Processing sample: $sample"
     salmon quant -i $salmon_index -p 6 --libType A \
-      --gcBias --biasSpeedSamp 5 \
+      --gcBias \
       -1 ${sample}_1.fastq.gz -2 ${sample}_2.fastq.gz \
       -o $sample
 done
