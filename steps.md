@@ -20,7 +20,7 @@ It's important to note that the files will be quite large (~40 GB) and so it is 
 First, we need to download the sequence data.
 
 The data used in this tutorial is GEO entry GSE52778.
-We will [acquire the data from ENA](https://www.ebi.ac.uk/ena/browser/view/SRP033351), rather than GEO as it is more convenient.
+We will [acquire the data from ENA](https://www.ebi.ac.uk/ena/browser/view/SRP033351), rather than GEO as it is more convenient. Also download the metadata as a tsv and upload to the HPC as we will be using it later to label the samples properly in R.
 
 ```bash
 touch ena-download-read-run-SRP033351-fastq-ftp.sh
@@ -189,13 +189,27 @@ Check the mapping rate of the output
 find . -name "salmon_quant.log" | xargs grep "Mapping rate"
  ```
 
+
 ## Importing the data to R with tximport
+
+The following code is to be completed using R. When using EE server, its advised to use jupyter notebook with your conda R environment as this is currently the only way to have notebooks on the server - we want the notebooks so that we can see the output of the code i.e. graphs.
+
+For example, to see the output without a notebook we would have to manually save each graph in our directories first e.g.
+
+```R
+ggsave("/home/anbennett2/rna-seq-tutorial/pvalue_hist.png", plot = p, width = 6, height = 4, dpi = 300)
+```
+
+The below code is available as an ipynb file 'rna-seq-analysis.ipynb' which is recommended to be opened in vscode jupyter notebook.
 
 ```R
 library(tximport)
 library(dplyr)
 library(ggplot2)
+library(DESeq2)
 ```
+
+First read in the files by making a list of files that have the .sf extension. Then use the directory names to name the files.
 
 ```R
 files <- list.files(path = "~/rna-seq-tutorial/raw-seq-data", pattern = ".sf", full.names = TRUE, recursive = TRUE)
@@ -204,10 +218,96 @@ samp_dirs <- basename(dirname(files))
 names(files) <- sub("_quant$", "", samp_dirs)
 ```
 
+Then, use the import function to read in the gtf file
+
 ```R
 gtf <- rtracklayer::import("~/rna-seq-tutorial/reference/gencode.v45.basic.annotation.gtf.gz")
 ```
 
+Look at the top of the file using head to check the contents.
+
+```R
+head(gtf)
+```
+
+Convert it into a df with tidyverse.
+
 ```R
 gtf_df <- as.data.frame(gtf)
 ```
+
+
+```R
+tx2gene <- gtf_df %>%
+        filter(type == "transcript") %>%
+        select(transcript_id, gene_id)
+```
+
+```R
+gene_name_map <- gtf_df %>% 
+        filter(type == "gene") %>% 
+        select(gene_id, gene_name) 
+```
+
+```R
+txi.salmon <- tximport(files, type = "salmon", tx2gene = tx2gene)
+```
+
+```R
+ena <- read.delim("/home/anbennett2/rna-seq-tutorial/filereport_read_run_SRP033351_tsv-2.txt", 
+                  sep = "\t", header = TRUE, stringsAsFactors = FALSE)
+
+# Get sample IDs from your tximport counts matrix
+sample_ids <- colnames(txi.salmon$counts)
+
+# Ensure all your samples are in the ENA table
+stopifnot(all(sample_ids %in% ena$run_accession))
+
+# Align ENA data to your sample order
+ena_aligned <- ena[match(sample_ids, ena$run_accession), ]
+
+# Extract treatment conditions from sample_title
+# Pattern: DonorID_Treatment or DonorID_untreated
+condition <- case_when(
+  grepl("_untreated$", ena_aligned$sample_title) ~ "untreated",
+  grepl("_Alb_Dex$", ena_aligned$sample_title) ~ "albuterol_dexamethasone", 
+  grepl("_Alb$", ena_aligned$sample_title) ~ "albuterol",
+  grepl("_Dex$", ena_aligned$sample_title) ~ "dexamethasone",
+  TRUE ~ NA_character_
+)
+
+# Extract donor IDs (everything before the first underscore)
+donor <- sub("_.*$", "", ena_aligned$sample_title)
+
+# Build metadata dataframe
+meta <- data.frame(
+  condition = factor(condition, 
+                    levels = c("untreated", "albuterol", "dexamethasone", "albuterol_dexamethasone")),
+  donor = factor(donor),
+  row.names = ena_aligned$run_accession,
+  stringsAsFactors = FALSE
+)
+
+# Verify alignment
+stopifnot(identical(rownames(meta), colnames(txi.salmon$counts)))
+stopifnot(!any(is.na(meta$condition)))
+
+# Check the result
+print(meta)
+table(meta$condition)
+table(meta$donor)
+```
+
+```R
+dds <- DESeqDataSetFromTximport(txi.salmon, meta, ~ condition)
+
+dds$condition <- relevel(dds$condition, ref = "untreated")
+
+dds <- DESeq(dds)
+
+res <- results(dds, contrast = c("condition", "untreated", "dexamethasone"))
+
+res
+
+```
+
