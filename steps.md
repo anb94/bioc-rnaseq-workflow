@@ -194,5 +194,4 @@ find . -name "salmon_quant.log" | xargs grep "Mapping rate"
 
 In this section, the code is to be completed using R. When using EE server, it's advised to use jupyter notebook with your conda R environment as this is currently the only way to have notebooks on the server - we want the notebooks so that we can see the output of the code i.e. graphs as that will give us a feel for the data. For example, to see the output without a notebook we would have to manually save each graph in our directories first e.g.
 
-Connect to the server through ssh inside vscode and run the code in the following file there:
-na-seq-analysis.ipynb
+Connect to the server through ssh inside vscode and run the code in the 'rna-seq-analysis.ipynb' file there:
