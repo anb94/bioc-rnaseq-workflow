@@ -189,7 +189,6 @@ Check the mapping rate of the output
 find . -name "salmon_quant.log" | xargs grep "Mapping rate"
  ```
 
-
 ## Importing the data to R with tximport
 
 In this section, the code is to be completed using R. When using EE server, it's advised to use jupyter notebook with your conda R environment as this is currently the only way to have notebooks on the server - we want the notebooks so that we can see the output of the code i.e. graphs as that will give us a feel for the data. For example, to see the output without a notebook we would have to manually save each graph in our directories first e.g.
