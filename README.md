@@ -1,13 +1,12 @@
 # BioConductor RNA Seq Workflow
 
-
 ## Introduction
 
 This RNA-Seq tutorial was based on several existing tutorials, including this excellent tutorial by [Michael Love et al.](https://www.bioconductor.org/help/course-materials/2019/CSAMA/materials/labs/lab-03-rnaseq/rnaseqGene_CSAMA2019.html?utm_source=perplexity#experimental-data), the [Griffith lab RNA-Seq course](https://rnabio.org/course/), and [Tommy Tang's tutorials](https://divingintogeneticsandgenomics.com/post/downstream-of-bulk-rnaseq-read-in-salmon-output-using-tximport-and-then-deseq2/).
 
-Although each of these tutorials are great resources, they skip over some key steps that are difficult for beginners, including data acquisition.
+Although each of these tutorials are great resources, they skip over some key steps that are difficult for beginners, including data acquisition and tool installation. The purpose of this tutorial is to provide a clear and concise example of RNA-Seq analysis with minimal set up for members of our group with our lab equipment in mind. For example, the EE server behaves more like a Linux PC rather than an HPC like CityU Burgundy - although we still do not have sudo permission. Therefore, everything must be installed via conda.
 
-The step-by-step instructions to follow are currently stored in the steps.md file.
+The step-by-step instructions to follow are currently stored in the steps.md file. A breakdown of these steps is below.
 
 ## Overview
 
@@ -21,3 +20,4 @@ In this tutorial we will use salmon and fastqc installed via conda.
 
 First, the data will be imported into R with tximport, then DESeq2 will be used for the analysis.
 
+![](MA-plot.png=true)
