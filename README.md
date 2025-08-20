@@ -20,4 +20,6 @@ In this tutorial we will use salmon and fastqc installed via conda.
 
 First, the data will be imported into R with tximport, then DESeq2 will be used for the analysis.
 
-![MA plot showing differential expression results](MA-plot.png=true)
+In the tutorial you will perform QC first and then produce a number of graphs to visualise your results. An example of this is the MA plot below:
+
+<img src="MA-plot.png" alt="MA plot showing differential expression results" width="350"/>
