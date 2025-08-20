@@ -11,4 +11,13 @@ The step-by-step instructions to follow are currently stored in the steps.md fil
 
 ## Overview
 
-The first step is to download the dataset and additional files needed for mapping the reads.
+The first step is to download the dataset and additional files needed for mapping the reads. We will then perform QC (to be added) to remove poor quality data followed by read mapping and quantification. The data is then read into R for differential expression analysis.
+
+## Mapping
+
+In this tutorial we will use salmon and fastqc installed via conda.
+
+## Differential Expression Analysis
+
+First, the data will be imported into R with tximport, then DESeq2 will be used for the analysis.
+
